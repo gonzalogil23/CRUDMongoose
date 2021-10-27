@@ -1,64 +1,65 @@
 let mongoose = require("mongoose");
 let { Productos } = require("../models/productos.js");
 
-CRUDproductos();
-
-async function CRUDproductos() {
-  try {
-    const URI = "mongodb://localhost:27017/ecommerce";
-    await mongoose.connect(URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("Conectado a la base de datos...");
-    let products = [
+class CRUDproductos {
+  constructor() {
+    this.products = [
       {
         title: "SmartTV",
         price: 70000,
         thumbnail:
-          "https://cdn2.iconfinder.com/data/icons/essential-web-2/50/tv-screen-smart-widescreen-watch-128.png",
+          "https://cdn2.iconfinder.com/data/icons/essential-web-2/520/tv-screen-smart-widescreen-watch-128.png",
       },
       {
         title: "Aire Acondicionado",
         price: 53000,
         thumbnail:
-          "https://cdn2.iconfinder.com/data/icons/kitchen-appliances-computers-and-electronics/32/Appliances-19-128.png",
+          "https://cdn2.iconfinder.com/data/icons/kitchen-appliances-computers-and-electronics/32a/Appliances-19-128.png",
       },
       {
         title: "Celular Samsung",
         price: 57000,
         thumbnail:
-          "https://cdn2.iconfinder.com/data/icons/kitchen-appliances-computers-and-electronics/32/Appliances-06-128.png",
+          "https://cdn2.iconfinder.com/data/icons/kitchen-appliances-computers-and-electronics/332/Appliances-06-128.png",
       },
     ];
-    await Productos.insertMany(products, (error) => {
-      if (error) {
-        throw ` Error al grabar productos ${error}`;
-      } else {
-        console.log(`Productos grabados...`);
+
+    this.getProducts = async () => {
+      let productos = await Productos.find({}).sort({ price: 1 });
+
+      return productos;
+    };
+    this.getById = async (id) => {
+      let product = await Product.findOne({ _id: id });
+      return product;
+    };
+    this.updateProduct = async (id, product) => {
+      this.getById(id);
+      if (id) {
+        let productoActualizado = await Productos.updateOne(
+          { _id: id },
+          product
+        );
+        console.log(`Producto actualizado: ${productoActualizado}`);
       }
-    });
-    let productos = await Productos.find({}).sort({ price: 1 });
-    console.log(productos);
+    };
 
-    let productoActualizado = await Productos.updateOne(
-      { title: "Aire Acondicionado" },
-      { price: 62000 }
-    );
-    console.log(`Producto actualizado: ${productoActualizado}`);
+    this.saveProduct = async (product) => {
+      const newProduct = new Productos(product);
+      await newProduct.save();
+      return newProduct;
+    };
 
-    let productoNuevo = await Productos.create({
-      title: "Monitor",
-      price: 42000,
-      thumbnail:
-        "https://cdn2.iconfinder.com/data/icons/kitchen-appliances-computers-and-electronics/32/Appliances-09-128.png",
-    });
-    console.log(productoNuevo);
+    this.deleteOne = async (product, id) => {
+      this.getById(id);
+      await Productos.deleteOne({ _id: id }, product);
+      console.log(`Producto borrado. Lista actualizada: ${products}`);
+    };
 
-    await Productos.deleteOne({ title: "Monitor" });
-    console.log(`Producto borrado. Lista actualizada: ${products}`);
-    await mongoose.connection.close();
-  } catch (error) {
-    throw `Error: ${error}`;
+    this.connectionOff = async () => await mongoose.connection.close();
   }
 }
+
+module.exports = {
+  CRUDproductos,
+};
