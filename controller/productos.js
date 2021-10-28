@@ -8,7 +8,7 @@ const getAll = async (req, res) => {
       res.json({ error: "no hay productos cargados" });
     } else {
       db.getProducts();
-      res.json(products);
+      res.json(db.products);
     }
   } catch (e) {
     throw new Error(e.message);
